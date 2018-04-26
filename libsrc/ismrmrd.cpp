@@ -9,7 +9,7 @@
 namespace ISMRMRD {
 
 //
-// AcquisitionHeader class implementation
+// Acquisition Header class implementation
 //
 // Constructors
 AcquisitionHeader::AcquisitionHeader() {
