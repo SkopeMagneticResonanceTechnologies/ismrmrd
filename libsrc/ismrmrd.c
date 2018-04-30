@@ -1,3 +1,20 @@
+/* Hint
+To avoid manual copying of the dll/exe-file after compilation
+
+- Right Click on the Project and select "Properties"
+- Click on the Build Events Tab
+- Add the following line to the "Post-Build" box: 
+
+
+echo.
+echo.
+echo    Copying dll to ISMRMRD and SIEMENS_TO_ISMRMRD folder
+copy "$(TargetPath)" "C:\Program Files\ISMRMRD\lib"
+copy "$(TargetPath)" "C:\Program Files\SIEMENS_TO_ISMRMRD"
+echo.
+echo.
+
+*/
 #include <string.h>
 #include <stdlib.h>
 
@@ -581,7 +598,7 @@ int ismrmrd_sign_of_directions(float read_dir[3], float phase_dir[3], float slic
     }
 }
 
-void ismrmrd_directions_to_quaternion(float read_dir[3], float phase_dir[3],
+void ismrmrd_directions_SCT_to_quaternion(float read_dir[3], float phase_dir[3],
                                       float slice_dir[3], float quat[4]) {
     float r11 = read_dir[0], r12 = phase_dir[0], r13 = slice_dir[0];
     float r21 = read_dir[1], r22 = phase_dir[1], r23 = slice_dir[1];
@@ -655,7 +672,7 @@ void ismrmrd_directions_to_quaternion(float read_dir[3], float phase_dir[3],
 }
 
 /* http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q54 */
-void ismrmrd_quaternion_to_directions(float quat[4], float read_dir[3],
+void ismrmrd_quaternion_to_directions_SCT(float quat[4], float read_dir[3],
                                       float phase_dir[3], float slice_dir[3]) {
     float a = quat[0], b = quat[1], c = quat[2], d = quat[3];
     
@@ -671,6 +688,114 @@ void ismrmrd_quaternion_to_directions(float quat[4], float read_dir[3],
     phase_dir[2] = 2.0f * (b * c + a * d);
     slice_dir[2] = 1.0f - 2.0f * (a * a + b * b);
 }
+
+void ismrmrd_quaternion_to_rotation_matrix_SCT(float quat[4], float rot[3][3]) {
+	float a = quat[0], b = quat[1], c = quat[2], d = quat[3];
+
+	rot[0][0] = 1.0f - 2.0f * (b * b + c * c);
+	rot[0][1] = 2.0f * (a * b - c * d);
+	rot[0][2] = 2.0f * (a * c + b * d);
+
+	rot[1][0] = 2.0f * (a * b + c * d);
+	rot[1][1] = 1.0f - 2.0f * (a * a + c * c);
+	rot[1][2] = 2.0f * (b * c - a * d);
+
+	rot[2][0] = 2.0f * (a * c - b * d);
+	rot[2][1] = 2.0f * (b * c + a * d);
+	rot[2][2] = 1.0f - 2.0f * (a * a + b * b);
+}
+
+
+void ismrmrd_quaternion_to_directions_XYZ(float quat[4], const char *patientPosition,
+	float read_dir[3], float phase_dir[3], float slice_dir[3]) {
+
+	// Phase/Read/Slice to Sag/Cor/Tra
+	float PRS2SCT[3][3];
+	ismrmrd_quaternion_to_rotation_matrix_SCT(quat, PRS2SCT);
+	
+	// Sag/Cor/Tra to XYZ
+	float SCT2XYZ[3][3];
+	ismrmrd_rotation_matrix_SCT_to_XYZ(patientPosition, SCT2XYZ);
+
+
+	// Phase/Read/Slice to XYZ
+	float PRS2XYZ[3][3];
+	for (int a = 0; a < 3; a++) {
+		for (int b = 0; b < 3; b++) {
+			PRS2XYZ[b][a] = 0;
+			for (int c = 0; c < 3; c++) {
+				PRS2XYZ[b][a] += SCT2XYZ[b][c] * PRS2SCT[c][a];
+			}
+		}
+	}
+
+	for (int i = 0; i < 3; i++) {
+		phase_dir[i] = PRS2XYZ[i][0];
+		read_dir[i] = PRS2XYZ[i][1];
+		slice_dir[i] = PRS2XYZ[i][2];
+	}
+
+}
+
+
+
+
+void ismrmrd_rotation_matrix_SCT_to_XYZ(const char *patientPosition, float SCT2XYZ[3][3]) {
+
+	// Only for HFS
+	if (strcmp(patientPosition, "HFS") != 0)
+	{
+		ISMRMRD_PUSH_ERR(ISMRMRD_RUNTIMEERROR, "Only HFS supported so far.");
+		return;
+	}
+
+	SCT2XYZ[0][0] = 1;  SCT2XYZ[0][1] = 0;  SCT2XYZ[0][2] = 0;
+	SCT2XYZ[1][0] = 0;  SCT2XYZ[1][1] = -1; SCT2XYZ[1][2] = 0;
+	SCT2XYZ[2][0] = 0;  SCT2XYZ[2][1] = 0;  SCT2XYZ[2][2] = -1;
+}
+
+void ismrmrd_transform_SCT_XYZ(const char *patientPosition, float posSCT[3], float posXYZ[3]) {
+	
+	// Sag/Cor/Tra to XYZ
+	float SCT2XYZ[3][3];
+	ismrmrd_rotation_matrix_SCT_to_XYZ(patientPosition, SCT2XYZ);
+
+	float temp[3];
+	for (int i = 0; i < 3; i++) {
+		temp[i] = 0;
+		for (int j = 0; j < 3; j++) {
+			temp[i] += SCT2XYZ[i][j] * posSCT[j];
+		}
+	}
+	for (int i = 0; i < 3; i++) {
+		posXYZ[i] = temp[i];
+	}
+}
+
+void ismrmrd_transform_SCT_PRS(float quat[4], float posSCT[3], float posPRS[3]) {
+
+	// Phase/Read/Slice to Sag/Cor/Tra
+	float PRS2SCT[3][3];
+	ismrmrd_quaternion_to_rotation_matrix_SCT(quat, PRS2SCT);
+
+	// Compute slice shift in PRS coordinate system
+	// Positions are still in SAG/COR/TRA coordinate system
+	float temp[3];
+	for (int i = 0; i < 3; i++) {
+		temp[i] = 0;
+		for (int j = 0; j < 3; j++) {
+			temp[i] += PRS2SCT[j][i]/*using inverse by swapping indices*/ * posSCT[j];
+		}
+	}
+	for (int i = 0; i < 3; i++) {
+		posPRS[i] = temp[i];
+	}
+}
+
+
+
+
+
 
 /**
  * Saves error information on the error stack

@@ -423,11 +423,27 @@ bool ismrmrd_pop_error(char **file, int *line, char **func,
 EXPORTISMRMRD int ismrmrd_sign_of_directions(float read_dir[3], float phase_dir[3], float slice_dir[3]);
 
 /** Creates a normalized quaternion from a 3x3 rotation matrix */
-EXPORTISMRMRD void ismrmrd_directions_to_quaternion(float read_dir[3], float phase_dir[3], float slice_dir[3], float quat[4]);
+EXPORTISMRMRD void ismrmrd_directions_SCT_to_quaternion(float read_dir[3], float phase_dir[3], float slice_dir[3], float quat[4]);
 
-/** Converts a quaternion of the form | a b c d | to a 3x3 rotation matrix */
-EXPORTISMRMRD void ismrmrd_quaternion_to_directions(float quat[4], float read_dir[3], float phase_dir[3], float slice_dir[3]);
+/** Converts a quaternion of the form | a b c d | to a 3x3 rotation matrix expressed in the SAG/COR/TRA coordinate system*/
+EXPORTISMRMRD void ismrmrd_quaternion_to_directions_SCT(float quat[4], float read_dir[3], float phase_dir[3], float slice_dir[3]);
+
+/** Converts a quaternion of the form | a b c d | to a 3x3 rotation matrix expressed in the XYZ coordinate system*/
+EXPORTISMRMRD void ismrmrd_quaternion_to_directions_XYZ(float quat[4], const char *patientPosition, float read_dir[3], float phase_dir[3], float slice_dir[3]);
+
+/** Converts a quaternion to a 3x3 rotation matrix expressed in the SAG/COR/TRA coordinate system*/
+EXPORTISMRMRD  void ismrmrd_quaternion_to_rotation_matrix_SCT(float quat[4], float rot[3][3]);
+
+/** Convert from SAG/COR/TRA to XYZ*/
+EXPORTISMRMRD void ismrmrd_rotation_matrix_SCT_to_XYZ(const char *patientPosition, float SCT2XYZ[3][3]);
+
+
+EXPORTISMRMRD void ismrmrd_transform_SCT_XYZ(const char *patientPosition, float posSCT[3], float posXYZ[3]);
+
+EXPORTISMRMRD void ismrmrd_transform_SCT_PRS(float quat[4], float posSCT[3], float posPRS[3]);
 /** @} */
+
+
 
 #pragma pack(pop) /* Restore old alignment */
 
