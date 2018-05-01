@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE(test_directions_to_quaternion)
     float quaternion[4];
 
     /* convert the direction vectors to a quaternion and verify */
-    ismrmrd_directions_to_quaternion(read_dir, phase_dir, slice_dir, quaternion);
+    ismrmrd_directions_SCT_to_quaternion(read_dir, phase_dir, slice_dir, quaternion);
 
     BOOST_CHECK_EQUAL(quaternion[0], 0.0);
     BOOST_CHECK_EQUAL(quaternion[1], 0.0);
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(test_quaternion_to_directions)
     float quaternion[4] = {0.0, 0.0, 0.0, 1.0};
 
     /* convert the quaternion back to direction cosines and verify */
-    ismrmrd_quaternion_to_directions(quaternion, read_dir, phase_dir, slice_dir);
+    ismrmrd_quaternion_to_directions_SCT(quaternion, read_dir, phase_dir, slice_dir);
     BOOST_CHECK_EQUAL(read_dir[0], 1.0);
     BOOST_CHECK_EQUAL(read_dir[1], 0.0);
     BOOST_CHECK_EQUAL(read_dir[2], 0.0);
