@@ -8,13 +8,8 @@ A prerequisite for sharing magnetic resonance (imaging) reconstruction algorithm
 Obtaining and Installing
 -------------------------
 
-To download the source code, clone the git archive:
+Please see the installation instructions given [here](https://github.com/SkopeMagneticResonanceTechnologies/siemens_to_ismrmrd). 
 
-    git clone https://github.com/ismrmrd/ismrmrd
-
-API Documentation can be found at https://ismrmrd.github.io/api/.
-
-You will need CMake, HDF5, and optionally Boost and FFTW to build the C/C++ code. To generate the API documentation you will need Doxygen. Please see the ISMRMRD documentation for specific installation instructions for [Linux](https://ismrmrd.github.io/index.html#linux-installation), [Mac OS X](https://ismrmrd.github.io/index.html#mac-osx-installation), and [Windows](https://ismrmrd.github.io/index.html#windows-installation).
 
 Overview
 ---------
@@ -34,25 +29,4 @@ Other Resources
 
 - [Python implementation](https://www.github.com/ismrmrd/ismrmrd-python)
 
-External Use of ISMRMRD in other source packages
-------------------------------------------------
-Build and install ISMRMRD by setting 
 
-```
-   cmake -DCMAKE_INSTALL_PREFIX=<your install directory>
-```
-
-To use ISMRMRD for your externally developed projects, add the following to your CMakeLists.txt file:
-
-```
-  find_package( ISMRMRD REQUIRED )
-  link_directories( ${ISMRMRD_LIBRARY_DIRS} )
-  include_directories( ${ISMRMRD_INCLUDE_DIRS} )
-  target_link_libraries( mytarget ${ISMRMRD_LIBRARIES} )
-```
-
-then when configuring your package use set the following cmake variables (command line variant shown):
-
-```
-  cmake -DISMRMRD_DIR:PATH=<path to build/install tree of ISMRMRD> <path to my source tree>
-```
