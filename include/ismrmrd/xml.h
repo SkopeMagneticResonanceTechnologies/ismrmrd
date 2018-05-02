@@ -162,7 +162,8 @@ namespace ISMRMRD
 
   struct ExperimentalConditions
   {
-    long int H1resonanceFrequency_Hz;
+	  long int H1resonanceFrequency_Hz;
+	  long int LarmorConstant_Hz_Per_T;
   };
 
   struct MatrixSize

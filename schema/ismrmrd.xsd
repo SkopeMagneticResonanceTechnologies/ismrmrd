@@ -105,6 +105,7 @@
   <xs:complexType name="experimentalConditionsType">
     <xs:all>
       <xs:element name="H1resonanceFrequency_Hz" type="xs:long"/>
+	  <xs:element name="LarmorConstant_Hz_Per_T" type="xs:long"/>
     </xs:all>
   </xs:complexType>
 

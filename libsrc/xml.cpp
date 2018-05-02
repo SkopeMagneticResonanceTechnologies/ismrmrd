@@ -259,6 +259,7 @@ namespace ISMRMRD
       } else {
 	ExperimentalConditions e;
 	e.H1resonanceFrequency_Hz = std::atol(experimentalConditions.child_value("H1resonanceFrequency_Hz"));
+	e.LarmorConstant_Hz_Per_T = std::atol(experimentalConditions.child_value("LarmorConstant_Hz_Per_T"));
 	h.experimentalConditions = e;
       }
       
@@ -740,7 +741,8 @@ namespace ISMRMRD
 
     n1 = root.append_child();
     n1.set_name("experimentalConditions");
-    append_node(n1,"H1resonanceFrequency_Hz", h.experimentalConditions.H1resonanceFrequency_Hz);
+	append_node(n1, "H1resonanceFrequency_Hz", h.experimentalConditions.H1resonanceFrequency_Hz);
+	append_node(n1, "LarmorConstant_Hz_Per_T", h.experimentalConditions.LarmorConstant_Hz_Per_T);
 
     if (!h.encoding.size()) {
       throw std::runtime_error("Encoding array is empty. Invalid ISMRMRD header structure");
