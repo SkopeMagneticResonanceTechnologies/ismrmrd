@@ -33,7 +33,7 @@ for n = 1:numChildNodes
     theChild = item(childNodes,n-1);
     name = char(getNodeName(theChild));
 
-    %Some elements occur more than once
+    %Some elements occure more than once
     if isfield(info,name)
         num = length(info.(name))+1;
     else
@@ -123,7 +123,6 @@ function info = parseUserParameter(theNode)
     numChildNodes = getLength(childNodes);
     
     info = struct;
-    info.value = [];
     
     for n = 1:numChildNodes
         theChild = item(childNodes,n-1);
@@ -131,11 +130,19 @@ function info = parseUserParameter(theNode)
             info.name = char(getTextContent(theChild));
         end
         if strcmp(getNodeName(theChild),'value')
-            if strcmp(paramType, 'userParameterLong') || strcmp(paramType, 'userParameterDouble')
-                info.value(end+1) = str2num(getTextContent(theChild));
+            if strcmp(paramType, 'userParameterLong')
+                info.value = str2num(getTextContent(theChild));
             end
 
-            if strcmp(paramType, 'userParameterString') || strcmp(paramType, 'userParameterBase64')
+            if strcmp(paramType, 'userParameterDouble')
+                info.value = str2num(getTextContent(theChild));
+            end
+
+            if strcmp(paramType, 'userParameterString')
+                info.value = char(getTextContent(theChild));
+            end
+
+            if strcmp(paramType, 'userParameterBase64')
                 info.value = char(getTextContent(theChild));
             end
         end
@@ -183,7 +190,7 @@ end
 function status = isNumericalType(name)
     headerNumericalTypes = { ...
       'version', ...
-      'patientWeight', ...
+      'patientWeight_kg', ...
       'accessionNumber', ...
       'initialSeriesNumber', ...
       'systemFieldStrength_T', ...
@@ -227,6 +234,7 @@ function status = isStringType(name)
       'stationName', ...
       'trajectory', ...
       'identifier', ...
+      'comment', ...
       'coilName', ...
       'calibrationMode',...
       'interleavingDimension',...

@@ -11,7 +11,7 @@ docRootNode.setAttribute('xsi:schemaLocation','http://www.ismrm.org/ISMRMRD ismr
 
 append_optional(docNode,docRootNode,header,'version',@int2str)
 
-if isfield(header,'subjectInformation')
+if isprop(header,'subjectInformation') || isfield(header,'subjectInformation')
     subjectInformation = header.subjectInformation;
     subjectInformationNode = docNode.createElement('subjectInformation');
     append_optional(docNode,subjectInformationNode,subjectInformation,'patientName');
@@ -22,7 +22,7 @@ if isfield(header,'subjectInformation')
     docRootNode.appendChild(subjectInformationNode);
 end
 
-if isfield(header,'studyInformation')
+if isprop(header,'studyInformation')|| isfield(header,'studyInformation')
     studyInformation = header.studyInformation;
     studyInformationNode = docNode.createElement('studyInformation');
     append_optional(docNode,studyInformationNode,studyInformation,'studyDate');
@@ -35,7 +35,7 @@ if isfield(header,'studyInformation')
     docRootNode.appendChild(studyInformationNode);
 end
 
-if isfield(header,'measurementInformation')
+if isprop(header,'measurementInformation')|| isfield(header,'measurementInformation')
     measurementInformation = header.measurementInformation;
     measurementInformationNode = docNode.createElement('measurementInformation');
     append_optional(docNode,measurementInformationNode,measurementInformation,'measurementID');
@@ -48,20 +48,20 @@ if isfield(header,'measurementInformation')
     append_optional(docNode,measurementInformationNode,measurementInformation,'protocolName');
     append_optional(docNode,measurementInformationNode,measurementInformation,'seriesDescription');
     
-    if isfield(measurementInformation, 'measurementDependency')
+    if isprop(measurementInformation, 'measurementDependency')|| isfield(header,'measurementDependency')
         measurementDependency = measurementInformation.measurementDependency;
         for dep = measurementDependency(:)
             node = docNode.createElement('measurementDependency');
             append_node(docNode,node,dep,'dependencyType');
             append_node(docNode,node,dep,'measurementID');
-            measurementInformationNode.appendChild(node)
+            measurementInformationNode.appendChild(node);
         end
     end
     
     append_optional(docNode,measurementInformationNode,measurementInformation,'seriesInstanceUIDRoot');
     append_optional(docNode,measurementInformationNode,measurementInformation,'frameOfReferenceUID');
     
-    if isfield(measurementInformation, 'referencedImageSequence')
+    if isprop(measurementInformation, 'referencedImageSequence')|| isfield(header,'referencedImageSequence')
         referencedImageSequence = measurementInformation.referencedImageSequence;
         referencedImageSequenceNode = docNode.createElement('referencedImageSequence');
         for ref = referencedImageSequence(:)
@@ -72,7 +72,7 @@ if isfield(header,'measurementInformation')
     docRootNode.appendChild(measurementInformationNode);
 end
 
-if isfield(header,'acquisitionSystemInformation')
+if isprop(header,'acquisitionSystemInformation')|| isfield(header,'acquisitionSystemInformation')
     acquisitionSystemInformation = header.acquisitionSystemInformation;
     acquisitionSystemInformationNode = docNode.createElement('acquisitionSystemInformation');
     append_optional(docNode,acquisitionSystemInformationNode,acquisitionSystemInformation,'systemVendor');
@@ -81,7 +81,7 @@ if isfield(header,'acquisitionSystemInformation')
     append_optional(docNode,acquisitionSystemInformationNode,acquisitionSystemInformation,'relativeReceiverNoiseBandwidth',@num2str);
     append_optional(docNode,acquisitionSystemInformationNode,acquisitionSystemInformation,'receiverChannels',@int2str);
     
-    if isfield(acquisitionSystemInformation, 'coilLabel')
+    if isprop(acquisitionSystemInformation, 'coilLabel')|| isfield(header,'coilLabel')
         coilLabel = acquisitionSystemInformation.coilLabel;
         for coil = 1:length(coilLabel)
             coilLabelNode = docNode.createElement('coilLabel');
@@ -101,7 +101,7 @@ experimentalConditionsNode = docNode.createElement('experimentalConditions');
 append_node(docNode,experimentalConditionsNode,experimentalConditions,'H1resonanceFrequency_Hz',@int2str);
 docRootNode.appendChild(experimentalConditionsNode);
 
-if ~isfield(header,'encoding')
+if ~(isprop(header,'encoding') || isfield(header,'encoding'))
     error('Illegal header: missing encoding section');
 end
 
@@ -129,25 +129,43 @@ for enc = header.encoding(:)
     node.appendChild(n2);
     
     % sometimes the encoding has the fields, but they are empty
-    if isfield(enc,'trajectoryDescription')
-        if ~isempty(fieldnames(enc.trajectoryDescription))
+    if isprop(enc,'trajectoryDescription') || isfield(enc,'trajectoryDescription')
+        if isfield(enc.trajectoryDescription,'identifier') && ...
+           ~isempty(enc.trajectoryDescription.identifier)
+       
             n2 = docNode.createElement('trajectoryDescription');
             append_node(docNode,n2,enc.trajectoryDescription,'identifier');
-            append_user_parameter(docNode,n2,enc.trajectoryDescription,'userParameterLong',@int2str);
-            append_user_parameter(docNode,n2,enc.trajectoryDescription,'userParameterDouble',@num2str);
+       
+            % add user parameters if set            
+            if isfield(enc.trajectoryDescription,'userParameterLong') && ...
+               ~isempty(enc.trajectoryDescription.userParameterLong)
+                append_user_parameter(docNode,n2,enc.trajectoryDescription,'userParameterLong',@int2str);
+            end
+
+            if isfield(enc.trajectoryDescription,'userParameterDouble') && ...
+               ~isempty(enc.trajectoryDescription.userParameterDouble)
+                append_user_parameter(docNode,n2,enc.trajectoryDescription,'userParameterDouble',@num2str);
+            end
+            
+            if isfield(enc.trajectoryDescription,'userParameterString') && ...
+               ~isempty(enc.trajectoryDescription.userParameterString)
+                append_user_parameter(docNode,n2,enc.trajectoryDescription,'userParameterString');
+            end
+            
+            % add comment
             append_optional(docNode,n2,enc.trajectoryDescription,'comment');      
             node.appendChild(n2);
         end
     end
     
-    if isfield(enc,'parallelImaging')
+    if isprop(enc,'parallelImaging') || isfield(enc,'parallelImaging')
         if ~isempty(fieldnames(enc.parallelImaging))
             n2 = docNode.createElement('parallelImaging');
 
             n3 = docNode.createElement('accelerationFactor');
             parallelImaging = enc.parallelImaging;
-            append_node(docNode,n3,parallelImaging.accelerationFactor,'kspace_encoding_step_1',@int2str);
-            append_node(docNode,n3,parallelImaging.accelerationFactor,'kspace_encoding_step_2',@int2str);
+            append_node(docNode,n3,parallelImaging.accelerationFactor,'kspace_encoding_step_1',@num2str);
+            append_node(docNode,n3,parallelImaging.accelerationFactor,'kspace_encoding_step_2',@num2str);
             n2.appendChild(n3);
 
             append_optional(docNode,n2,parallelImaging,'calibrationMode'); 
@@ -157,7 +175,7 @@ for enc = header.encoding(:)
         end
     end
     
-    if isfield(enc,'echoTrainLength')
+    if isprop(enc,'echoTrainLength') || isfield(enc,'echoTrainLength')
         if ~isempty(enc.echoTrainLength)
             append_optional(docNode,node,enc,'echoTrainLength',@int2str);
         end
@@ -167,7 +185,7 @@ for enc = header.encoding(:)
     
 end
 
-if isfield(header,'sequenceParameters')
+if isprop(header,'sequenceParameters') || isfield(header,'sequenceParameters')
     n1 = docNode.createElement('sequenceParameters');
     sequenceParameters = header.sequenceParameters;
     
@@ -180,21 +198,21 @@ if isfield(header,'sequenceParameters')
     docRootNode.appendChild(n1);
 end
 
-if isfield(header,'userParameters')
+if isprop(header,'userParameters')|| isfield(header,'userParameters')
     n1 = docNode.createElement('userParameters');
     userParameters = header.userParameters;
     
-    if isfield(userParameters,'userParameterLong')
+    if isprop(userParameters,'userParameterLong') || isfield(userParameters,'userParameterLong')
         append_user_parameter(docNode,n1,userParameters,'userParameterLong',@int2str);
     end
     
-    if isfield(userParameters,'userParameterDouble')
+    if isprop(userParameters,'userParameterDouble')|| isfield(userParameters,'userParameterDouble')
         append_user_parameter(docNode,n1,userParameters,'userParameterDouble',@num2str);
     end
-    if isfield(userParameters,'userParameterString')
+    if isprop(userParameters,'userParameterString')|| isfield(userParameters,'userParameterString')
         append_user_parameter(docNode,n1,userParameters,'userParameterString');
     end
-    if isfield(userParameters,'userParameterBase64')
+    if isprop(userParameters,'userParameterBase64')|| isfield(userParameters,'userParameterBase64')
         append_user_parameter(docNode,n1,userParameters,'userParameterBase64');
     end
     
@@ -226,7 +244,7 @@ end
 
     
 function append_encoding_limits(docNode,subNode,name,limit)
-    if isfield(limit,name)
+    if isprop(limit,name) || isfield(limit,name)
         n2 = docNode.createElement(name);    
         append_node(docNode,n2,limit.(name),'minimum',@int2str);
         append_node(docNode,n2,limit.(name),'maximum',@int2str);
@@ -255,7 +273,7 @@ end
     
     
 function append_optional(docNode,subnode,subheader,name,tostr)
-    if isfield(subheader,name)
+    if isprop(subheader,name) || isfield(subheader,name)
         if nargin > 4
             append_node(docNode,subnode,subheader,name,tostr);
         else
@@ -272,13 +290,18 @@ function append_node(docNode,subnode,subheader,name,tostr)
         (docNode.createTextNode(subheader.(name)));
         subnode.appendChild(n1);
     else
-
-        val = subheader.(name)(:);
-        for thisval = 1:length(val)
-            n1 = docNode.createElement(name);
-            n1.appendChild...
-                (docNode.createTextNode(tostr(val(thisval))));        
-            subnode.appendChild(n1);
+        for val = subheader.(name)(:)
+            for element=1:numel(val)
+                n1 = docNode.createElement(name);
+                
+                if strcmp(char(tostr),'num2str')
+                    % increase number of digits after comma for num2str
+                    n1.appendChild(docNode.createTextNode(tostr(val(element),15)));
+                else
+                    n1.appendChild(docNode.createTextNode(tostr(val(element))));
+                end
+                subnode.appendChild(n1);
+            end
         end
     end
 end
