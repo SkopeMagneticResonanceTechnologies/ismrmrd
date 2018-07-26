@@ -246,6 +246,14 @@ namespace ISMRMRD
     Optional<Limit> repetition;
     Optional<Limit> set;
     Optional<Limit> segment;
+	Optional<Limit> user_0;
+	Optional<Limit> user_1;
+	Optional<Limit> user_2;
+	Optional<Limit> user_3;
+	Optional<Limit> user_4;
+	Optional<Limit> user_5;
+	Optional<Limit> user_6;
+	Optional<Limit> user_7;
   };
 
 

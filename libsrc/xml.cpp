@@ -293,6 +293,14 @@ namespace ISMRMRD
 	    e.encodingLimits.repetition             = parse_encoding_limit(encodingLimits,"repetition");
 	    e.encodingLimits.set                    = parse_encoding_limit(encodingLimits,"set");
 	    e.encodingLimits.segment                = parse_encoding_limit(encodingLimits,"segment");
+		e.encodingLimits.user_0					= parse_encoding_limit(encodingLimits, "user_0");
+		e.encodingLimits.user_1					= parse_encoding_limit(encodingLimits, "user_1");
+		e.encodingLimits.user_2					= parse_encoding_limit(encodingLimits, "user_2");
+		e.encodingLimits.user_3					= parse_encoding_limit(encodingLimits, "user_3");
+		e.encodingLimits.user_4					= parse_encoding_limit(encodingLimits, "user_4");
+		e.encodingLimits.user_5					= parse_encoding_limit(encodingLimits, "user_5");
+		e.encodingLimits.user_6					= parse_encoding_limit(encodingLimits, "user_6");
+		e.encodingLimits.user_7					= parse_encoding_limit(encodingLimits, "user_7");
 	  }
 	  
 	  pugi::xml_node trajectory = encoding.child("trajectory");
@@ -763,6 +771,14 @@ namespace ISMRMRD
       append_encoding_limit(n2,"repetition",h.encoding[i].encodingLimits.repetition);
       append_encoding_limit(n2,"set",h.encoding[i].encodingLimits.set);
       append_encoding_limit(n2,"segment",h.encoding[i].encodingLimits.segment);
+	  append_encoding_limit(n2, "user_0", h.encoding[i].encodingLimits.user_0);
+	  append_encoding_limit(n2, "user_1", h.encoding[i].encodingLimits.user_1);
+	  append_encoding_limit(n2, "user_2", h.encoding[i].encodingLimits.user_2);
+	  append_encoding_limit(n2, "user_3", h.encoding[i].encodingLimits.user_3);
+	  append_encoding_limit(n2, "user_4", h.encoding[i].encodingLimits.user_4);
+	  append_encoding_limit(n2, "user_5", h.encoding[i].encodingLimits.user_5);
+	  append_encoding_limit(n2, "user_6", h.encoding[i].encodingLimits.user_6);
+	  append_encoding_limit(n2, "user_7", h.encoding[i].encodingLimits.user_7);
       append_node(n1,"trajectory",h.encoding[i].trajectory);
       
       if (h.encoding[i].trajectoryDescription) {
