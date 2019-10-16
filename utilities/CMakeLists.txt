@@ -22,6 +22,8 @@ if (HDF5_FOUND)
     install(TARGETS ismrmrd_read_timing_test DESTINATION bin)
 
     find_package(Boost 1.43 COMPONENTS program_options)
+	
+	set(CMAKE_MODULE_PATH "${PROJECT_CMAKE_DIR};${CMAKE_MODULE_PATH}")
     find_package(FFTW3 COMPONENTS single)
 
     if(FFTW3_FOUND AND Boost_FOUND)

@@ -298,11 +298,18 @@ namespace ISMRMRD
     unsigned short kspace_encoding_step_2;
   };
 
+  struct MultiBand {
+      double spacing;
+      unsigned short factor;
+      unsigned short totalSlices;
+  };
+
   struct ParallelImaging
   {
     AccelerationFactor accelerationFactor;
     Optional<std::string> calibrationMode;
     Optional<std::string> interleavingDimension;
+    Optional<MultiBand> multiBand;	
   };
 
   enum class TrajectoryType {

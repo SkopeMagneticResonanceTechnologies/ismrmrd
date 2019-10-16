@@ -256,6 +256,15 @@
       <xs:element name="kspace_encoding_step_2" type="xs:unsignedShort"/>
     </xs:all>
   </xs:complexType>
+  
+  
+  <xs:complexType name="multiBandType">
+    <xs:all>
+      <xs:element name="factor" type="xs:unsignedShort"/>
+	  <xs:element name="totalSlices" type="xs:unsignedShort"/>
+      <xs:element name="spacing" type="xs:double"/>
+    </xs:all>
+  </xs:complexType>
 
   <xs:simpleType name="calibrationModeType">
     <xs:restriction base="xs:string">
@@ -282,6 +291,7 @@
   	 <xs:element type="accelerationFactorType" name="accelerationFactor"/>
   	 <xs:element maxOccurs="1" minOccurs="0" type="calibrationModeType" name="calibrationMode"/>
   	 <xs:element maxOccurs="1" minOccurs="0" type="interleavingDimensionType" name="interleavingDimension"/>
+	 <xs:element maxOccurs="1" minOccurs="0" type="multiBandType" name="multiBand"/>
   	</xs:sequence>
   </xs:complexType>
 

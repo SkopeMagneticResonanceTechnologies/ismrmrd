@@ -340,7 +340,16 @@ namespace ISMRMRD
 	      info.accelerationFactor.kspace_encoding_step_1 = static_cast<unsigned short>(std::atoi(accelerationFactor.child_value("kspace_encoding_step_1")));
 	      info.accelerationFactor.kspace_encoding_step_2 = static_cast<unsigned short>(std::atoi(accelerationFactor.child_value("kspace_encoding_step_2")));
 	    }
-	    
+
+		pugi::xml_node multiBand = parallelImaging.child("multiBand");
+        if (multiBand) {
+            MultiBand mb;
+			mb.spacing = static_cast<double>(std::atof(multiBand.child_value("spacing")));
+            mb.factor = static_cast<unsigned short>(std::atoi(multiBand.child_value("factor")));
+            mb.totalSlices = static_cast<unsigned short>(std::atoi(multiBand.child_value("totalSlices")));
+            info.multiBand = mb;
+        }
+
 	    info.calibrationMode = parse_optional_string(parallelImaging,"calibrationMode");
 	    info.interleavingDimension = parse_optional_string(parallelImaging,"interleavingDimension");
 	    e.parallelImaging = info;
@@ -651,7 +660,7 @@ namespace ISMRMRD
   {
     pugi::xml_document doc;
     pugi::xml_node root = doc.append_child();
-    pugi::xml_node n1,n2,n3;
+    pugi::xml_node n1,n2,n3,n4;
     pugi::xml_attribute a;
 
     root.set_name("ismrmrdHeader");
@@ -782,20 +791,32 @@ namespace ISMRMRD
       append_node(n1,"trajectory",h.encoding[i].trajectory);
       
       if (h.encoding[i].trajectoryDescription) {
-	n2 = n1.append_child("trajectoryDescription");
-	append_node(n2,"identifier",h.encoding[i].trajectoryDescription->identifier);
-	append_user_parameter(n2,"userParameterLong",h.encoding[i].trajectoryDescription->userParameterLong); 
-	append_user_parameter(n2,"userParameterDouble",h.encoding[i].trajectoryDescription->userParameterDouble); 
-	append_optional_node(n2,"comment",h.encoding[i].trajectoryDescription->comment);
+			n2 = n1.append_child("trajectoryDescription");
+			append_node(n2,"identifier",h.encoding[i].trajectoryDescription->identifier);
+			append_user_parameter(n2,"userParameterLong",h.encoding[i].trajectoryDescription->userParameterLong); 
+			append_user_parameter(n2,"userParameterDouble",h.encoding[i].trajectoryDescription->userParameterDouble); 
+			append_optional_node(n2,"comment",h.encoding[i].trajectoryDescription->comment);
       }
 
       if (h.encoding[i].parallelImaging) {
-	n2 = n1.append_child("parallelImaging");
-	n3 = n2.append_child("accelerationFactor");
-	append_node(n3,"kspace_encoding_step_1",h.encoding[i].parallelImaging->accelerationFactor.kspace_encoding_step_1);
-	append_node(n3,"kspace_encoding_step_2",h.encoding[i].parallelImaging->accelerationFactor.kspace_encoding_step_2);
-	append_optional_node(n2, "calibrationMode", h.encoding[i].parallelImaging->calibrationMode);
-	append_optional_node(n2, "interleavingDimension", h.encoding[i].parallelImaging->interleavingDimension);
+		n2 = n1.append_child("parallelImaging");
+		n3 = n2.append_child("accelerationFactor");
+
+        append_optional_node(n2, "calibrationMode", h.encoding[i].parallelImaging->calibrationMode);
+		append_optional_node(n2, "interleavingDimension", h.encoding[i].parallelImaging->interleavingDimension);
+    
+		append_node(n3,"kspace_encoding_step_1",h.encoding[i].parallelImaging->accelerationFactor.kspace_encoding_step_1);
+		append_node(n3,"kspace_encoding_step_2",h.encoding[i].parallelImaging->accelerationFactor.kspace_encoding_step_2);
+
+		if (h.encoding[i].parallelImaging->multiBand) {
+            n4 = n2.append_child("multiBand");
+            append_node(n4, "spacing", h.encoding[i].parallelImaging->multiBand->spacing);
+            append_node(n4, "factor", h.encoding[i].parallelImaging->multiBand->factor);
+            append_node(n4, "totalSlices", h.encoding[i].parallelImaging->multiBand->totalSlices);
+		}
+
+
+		
       }
 
       append_optional_node(n1, "echoTrainLength", h.encoding[i].echoTrainLength);
