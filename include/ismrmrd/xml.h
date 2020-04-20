@@ -204,6 +204,12 @@ namespace ISMRMRD
     float z;
   };
 
+  struct DiffusionGradientDirection {
+      float rl;
+      float ap;
+      float fh;
+  };
+
   struct EncodingSpace
   {
     MatrixSize matrixSize;
@@ -340,6 +346,8 @@ namespace ISMRMRD
     Optional<std::vector<float> > flipAngle_deg;
     Optional<std::string> sequence_type;
     Optional<std::vector<float> > echo_spacing;
+    Optional<std::vector<float> > diffusion_bvalue;
+    Optional<std::vector<DiffusionGradientDirection> > diffusionGradientDirection;
   };
 
   enum class WaveformType {

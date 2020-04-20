@@ -225,6 +225,23 @@ namespace ISMRMRD
       throw std::runtime_error("Invalid waveform type in xml header");
   }
 
+  
+    std::vector<DiffusionGradientDirection> parse_vector_diffusionGradientDirection(pugi::xml_node &n, const char *child) {
+
+		std::vector<DiffusionGradientDirection> r;
+		pugi::xml_node nc = n.child(child);
+        while (nc) {
+            DiffusionGradientDirection l;
+            l.rl = std::atof(nc.child_value("rl"));
+            l.ap = std::atof(nc.child_value("ap"));
+            l.fh = std::atof(nc.child_value("fh"));
+            r.push_back(l);
+            nc = nc.next_sibling(child);
+        }
+        return r;
+	}
+
+
 
   //End of utility functions for deserializing header
 
@@ -469,6 +486,14 @@ namespace ISMRMRD
     r = parse_vector_float(sequenceParameters, "echo_spacing");
     if (!r.empty()) p.echo_spacing = r;
 
+	r = parse_vector_float(sequenceParameters, "diffusion_bvalue");
+    if (!r.empty()) p.diffusion_bvalue = r;
+
+	std::vector<DiffusionGradientDirection> d;
+    d = parse_vector_diffusionGradientDirection(sequenceParameters, "diffusionGradientDirection");
+    if (!d.empty()) p.diffusionGradientDirection = d;
+	
+
 	h.sequenceParameters = p;
       }
 
@@ -617,6 +642,13 @@ namespace ISMRMRD
     append_node(n3,"x",s.fieldOfView_mm.x);
     append_node(n3,"y",s.fieldOfView_mm.y);
     append_node(n3,"z",s.fieldOfView_mm.z);
+  }
+
+   void append_diffusion_direction(pugi::xml_node &n, const char *child, const DiffusionGradientDirection &s) {
+      pugi::xml_node n1 = n.append_child("diffusionGradientDirection");
+      append_node(n1, "rl", s.rl);
+      append_node(n1, "ap", s.ap);
+      append_node(n1, "fh", s.fh);
   }
 
   void append_encoding_limit(pugi::xml_node& n, const char* child, const Optional<Limit>& l) 
@@ -862,6 +894,20 @@ namespace ISMRMRD
               append_node(n1, "echo_spacing", h.sequenceParameters->echo_spacing->operator[](i));
           }
       }
+
+	  if (h.sequenceParameters->diffusion_bvalue.is_present()) {
+          for (size_t i = 0; i < h.sequenceParameters->diffusion_bvalue->size(); i++) {
+              append_node(n1, "diffusion_bvalue", h.sequenceParameters->diffusion_bvalue->operator[](i));
+          }
+      }
+
+      if (h.sequenceParameters->diffusionGradientDirection.is_present()) {
+
+		for (size_t i = 0; i < h.sequenceParameters->diffusionGradientDirection->size(); i++) {
+            append_diffusion_direction(n1, "diffusionGradientDirection", h.sequenceParameters->diffusionGradientDirection->operator[](i));
+		}
+
+	  }
     }
 
     if (h.userParameters) {
