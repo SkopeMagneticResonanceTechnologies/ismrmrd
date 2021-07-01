@@ -11,10 +11,10 @@
         <xs:element maxOccurs="1" minOccurs="0" name="measurementInformation" type="measurementInformationType"/>
         <xs:element maxOccurs="1" minOccurs="0" name="acquisitionSystemInformation" type="acquisitionSystemInformationType"/>
         <xs:element maxOccurs="1" minOccurs="1" name="experimentalConditions" type="experimentalConditionsType"/>
-        <xs:element maxOccurs="unbounded" minOccurs="1" name="encoding" type="encoding"/>
+        <xs:element maxOccurs="unbounded" minOccurs="1" name="encoding" type="encodingType"/>
         <xs:element maxOccurs="1" minOccurs="0" name="sequenceParameters" type="sequenceParametersType"/>
-        <xs:element maxOccurs="1" minOccurs="0" name="userParameters" type="userParameters"/>
-       <xs:element maxOccurs="32" minOccurs="0" name="waveformInformation" type="waveformInformation" />
+        <xs:element maxOccurs="1" minOccurs="0" name="userParameters" type="userParametersType"/>
+       <xs:element maxOccurs="32" minOccurs="0" name="waveformInformation" type="waveformInformationType" />
       </xs:sequence>
     </xs:complexType>
 
@@ -71,7 +71,7 @@
       <xs:element maxOccurs="unbounded" minOccurs="0" name="measurementDependency" type="measurementDependencyType"/>
       <xs:element minOccurs="0" name="seriesInstanceUIDRoot" type="xs:string"/>
       <xs:element minOccurs="0" name="frameOfReferenceUID" type="xs:string"/>
-      <xs:element minOccurs="0" name="referencedImageSequence" type="referencedImageSequence"/>
+      <xs:element minOccurs="0" name="referencedImageSequence" type="referencedImageSequenceType"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -109,7 +109,7 @@
     </xs:all>
   </xs:complexType>
 
-  <xs:complexType name="encoding">
+  <xs:complexType name="encodingType">
     <xs:all>
       <xs:element maxOccurs="1" minOccurs="1" name="encodedSpace" type="encodingSpaceType"/>
       <xs:element maxOccurs="1" minOccurs="1" name="reconSpace" type="encodingSpaceType"/>
@@ -123,12 +123,12 @@
 
   <xs:complexType name="encodingSpaceType">
     <xs:all>
-      <xs:element maxOccurs="1" minOccurs="1" name="matrixSize" type="matrixSize"/>
-      <xs:element maxOccurs="1" minOccurs="1" name="fieldOfView_mm" type="fieldOfView_mm"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="matrixSize" type="matrixSizeType"/>
+      <xs:element maxOccurs="1" minOccurs="1" name="fieldOfView_mm" type="fieldOfView_mmType"/>
     </xs:all>
   </xs:complexType>
 
-  <xs:complexType name="matrixSize">
+  <xs:complexType name="matrixSizeType">
     <xs:sequence>
       <xs:element default="1" maxOccurs="1" minOccurs="1" name="x" type="xs:unsignedShort"/>
       <xs:element default="1" maxOccurs="1" minOccurs="1" name="y" type="xs:unsignedShort"/>
@@ -136,7 +136,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="fieldOfView_mm">
+  <xs:complexType name="fieldOfView_mmType">
     <xs:sequence>
       <xs:element maxOccurs="1" minOccurs="1" name="x" type="xs:float"/>
       <xs:element maxOccurs="1" minOccurs="1" name="y" type="xs:float"/>
@@ -191,10 +191,10 @@
       <xs:element maxOccurs="1" minOccurs="1" name="identifier" type="xs:string"/>
       <xs:element maxOccurs="unbounded" minOccurs="0" name="userParameterLong" type="userParameterLongType"/>
       <xs:element maxOccurs="unbounded" minOccurs="0" name="userParameterDouble" type="userParameterDoubleType"/>
+	  <xs:element maxOccurs="unbounded" minOccurs="0" name="userParameterString" type="userParameterStringType"/>
       <xs:element maxOccurs="1" minOccurs="0" name="comment" type="xs:string"/>
     </xs:sequence>
   </xs:complexType>
-  
   
   <xs:complexType name="diffusionGradientDirectionType">
     <xs:all>
@@ -203,7 +203,23 @@
       <xs:element name="fh" type="xs:float"/>
     </xs:all>
   </xs:complexType>
-
+  
+  <xs:complexType name="diffusionType">
+    <xs:all>
+      <xs:element name="user_0" type="xs:unsignedShort"/>
+	  <xs:element name="user_1" type="xs:unsignedShort"/>
+	  <xs:element name="bvalue" type="xs:float"/>
+	  <xs:element name="direction" type="diffusionGradientDirectionType"/>
+    </xs:all>
+  </xs:complexType>
+  
+  <xs:complexType name="diffusionDescriptionType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="unbounded" type="diffusionType" name="diffusion"/>
+	</xs:sequence>
+  </xs:complexType>
+  
+   
   <xs:complexType name="sequenceParametersType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" type="xs:float" name="TR"/>
@@ -212,14 +228,8 @@
       <xs:element minOccurs="0" maxOccurs="unbounded" type="xs:float" name="flipAngle_deg"/>
       <xs:element minOccurs="0" maxOccurs="1" type="xs:string" name="sequence_type"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" type="xs:float" name="echo_spacing"/>
-
-	  <xs:element minOccurs="0" maxOccurs="unbounded" type="xs:float" name="diffusion_bvalue"/>
-	  <xs:element minOccurs="0" maxOccurs="unbounded" type="diffusionGradientDirectionType" name="diffusionGradientDirection"/>
-	  
+	  <xs:element minOccurs="0" maxOccurs="1" type="diffusionDescriptionType" name="diffusionDescription"/>	  
     </xs:sequence>
-	
-	
-	
   </xs:complexType>
 
   <xs:complexType name="userParameterLongType">
@@ -250,13 +260,13 @@
     </xs:all>
   </xs:complexType>
 
-  <xs:complexType name="referencedImageSequence">
+  <xs:complexType name="referencedImageSequenceType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" name="referencedSOPInstanceUID" type="xs:string"/>
     </xs:sequence>
   </xs:complexType>
       
-  <xs:complexType name="userParameters">
+  <xs:complexType name="userParametersType">
     <xs:sequence>
       <xs:element maxOccurs="unbounded" minOccurs="0" name="userParameterLong" type="userParameterLongType"/>
       <xs:element maxOccurs="unbounded" minOccurs="0" name="userParameterDouble" type="userParameterDoubleType"/>
@@ -312,7 +322,7 @@
 
 
 
-  <xs:complexType name="waveformInformation">
+  <xs:complexType name="waveformInformationType">
     <xs:sequence>
       <xs:element name="waveformName" type="xs:string"/>
       <xs:element name="waveformType">
@@ -327,7 +337,7 @@
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
-    <xs:element name="userParameters" type="userParameters"/>
+    <xs:element name="userParameters" type="userParametersType"/>
     </xs:sequence>
   </xs:complexType>
 </xs:schema>

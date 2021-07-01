@@ -225,21 +225,54 @@ namespace ISMRMRD
       throw std::runtime_error("Invalid waveform type in xml header");
   }
 
-  
-    std::vector<DiffusionGradientDirection> parse_vector_diffusionGradientDirection(pugi::xml_node &n, const char *child) {
+  DiffusionGradientDirection parse_vector_diffusionGradientDirection(pugi::xml_node &n, const char *child) {
 
-		std::vector<DiffusionGradientDirection> r;
+      pugi::xml_node nc = n.child(child);
+
+      DiffusionGradientDirection direction;
+      direction.rl = std::atof(nc.child_value("rl"));
+      direction.ap = std::atof(nc.child_value("ap"));
+      direction.fh = std::atof(nc.child_value("fh"));
+
+      return direction;
+  }
+
+	std::vector<Diffusion> parse_vector_diffusion(pugi::xml_node &n, const char *child) {
+
+		std::vector<Diffusion> r;
 		pugi::xml_node nc = n.child(child);
-        while (nc) {
-            DiffusionGradientDirection l;
-            l.rl = std::atof(nc.child_value("rl"));
-            l.ap = std::atof(nc.child_value("ap"));
-            l.fh = std::atof(nc.child_value("fh"));
-            r.push_back(l);
-            nc = nc.next_sibling(child);
-        }
-        return r;
+
+		while (nc) {
+
+			Diffusion diffusion;
+			diffusion.user_0 = std::atoi(nc.child_value("user_0"));
+			diffusion.user_1 = std::atoi(nc.child_value("user_1"));
+			diffusion.bvalue = std::atof(nc.child_value("bvalue"));          
+			diffusion.direction = parse_vector_diffusionGradientDirection(nc, "direction");
+			r.push_back(diffusion);
+			nc = nc.next_sibling(child);
+		}
+		return r;
 	}
+  
+  DiffusionDescription parse_vector_diffusionDescription(pugi::xml_node &n, const char *child) {
+
+	  pugi::xml_node nc = n.child(child);
+
+	  std::vector<Diffusion> diffusion;
+      DiffusionDescription diffusionDescription;
+      diffusion = parse_vector_diffusion(nc, "diffusion");
+      if (!diffusion.empty())
+          diffusionDescription.diffusion = diffusion;
+	  
+      return diffusionDescription;
+  }
+
+
+  
+
+
+
 
 
 
@@ -465,37 +498,32 @@ namespace ISMRMRD
 	h.acquisitionSystemInformation = info;
       }
 
-      if (sequenceParameters) {
-	SequenceParameters p;
+    if (sequenceParameters) {
+		SequenceParameters p;
 
-    std::vector<float> r;
-    r = parse_vector_float(sequenceParameters, "TR");
-    if (!r.empty()) p.TR = r;
+		std::vector<float> r;
+		r = parse_vector_float(sequenceParameters, "TR");
+		if (!r.empty()) p.TR = r;
 
-    r = parse_vector_float(sequenceParameters, "TE");
-    if (!r.empty()) p.TE = r;
+		r = parse_vector_float(sequenceParameters, "TE");
+		if (!r.empty()) p.TE = r;
 
-    r = parse_vector_float(sequenceParameters, "TI");
-    if (!r.empty()) p.TI = r;
+		r = parse_vector_float(sequenceParameters, "TI");
+		if (!r.empty()) p.TI = r;
 
-    r = parse_vector_float(sequenceParameters, "flipAngle_deg");
-    if (!r.empty()) p.flipAngle_deg = r;
+		r = parse_vector_float(sequenceParameters, "flipAngle_deg");
+		if (!r.empty()) p.flipAngle_deg = r;
 
-    p.sequence_type = parse_optional_string(sequenceParameters, "sequence_type");
+		p.sequence_type = parse_optional_string(sequenceParameters, "sequence_type");
 
-    r = parse_vector_float(sequenceParameters, "echo_spacing");
-    if (!r.empty()) p.echo_spacing = r;
+		r = parse_vector_float(sequenceParameters, "echo_spacing");
+		if (!r.empty()) p.echo_spacing = r;
 
-	r = parse_vector_float(sequenceParameters, "diffusion_bvalue");
-    if (!r.empty()) p.diffusion_bvalue = r;
-
-	std::vector<DiffusionGradientDirection> d;
-    d = parse_vector_diffusionGradientDirection(sequenceParameters, "diffusionGradientDirection");
-    if (!d.empty()) p.diffusionGradientDirection = d;
-	
-
-	h.sequenceParameters = p;
-      }
+		
+		DiffusionDescription d;
+        p.diffusionDescription = parse_vector_diffusionDescription(sequenceParameters, "diffusionDescription");	
+		h.sequenceParameters = p;
+    }
 
       if (userParameters) {
 	UserParameters p;
@@ -895,19 +923,24 @@ namespace ISMRMRD
           }
       }
 
-	  if (h.sequenceParameters->diffusion_bvalue.is_present()) {
-          for (size_t i = 0; i < h.sequenceParameters->diffusion_bvalue->size(); i++) {
-              append_node(n1, "diffusion_bvalue", h.sequenceParameters->diffusion_bvalue->operator[](i));
+	  if (h.sequenceParameters->diffusionDescription.is_present()) {
+
+		  n2 = n1.append_child("diffusionDescription");
+
+          for (size_t i = 0; i < h.sequenceParameters->diffusionDescription->diffusion.size(); i++) {
+              
+			  n3 = n2.append_child("diffusion");
+
+              append_node(n3, "user_0", h.sequenceParameters->diffusionDescription->diffusion.operator[](i).user_0);
+              append_node(n3, "user_1", h.sequenceParameters->diffusionDescription->diffusion.operator[](i).user_1);
+              append_node(n3, "bvalue", h.sequenceParameters->diffusionDescription->diffusion.operator[](i).bvalue);
+
+			  n4 = n3.append_child("direction");
+              append_node(n4, "ap", h.sequenceParameters->diffusionDescription->diffusion.operator[](i).direction.ap);
+              append_node(n4, "rl", h.sequenceParameters->diffusionDescription->diffusion.operator[](i).direction.rl);
+              append_node(n4, "fh", h.sequenceParameters->diffusionDescription->diffusion.operator[](i).direction.fh);
           }
       }
-
-      if (h.sequenceParameters->diffusionGradientDirection.is_present()) {
-
-		for (size_t i = 0; i < h.sequenceParameters->diffusionGradientDirection->size(); i++) {
-            append_diffusion_direction(n1, "diffusionGradientDirection", h.sequenceParameters->diffusionGradientDirection->operator[](i));
-		}
-
-	  }
     }
 
     if (h.userParameters) {

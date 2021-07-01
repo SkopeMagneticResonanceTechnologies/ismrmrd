@@ -210,6 +210,13 @@ namespace ISMRMRD
       float fh;
   };
 
+  struct Diffusion {
+      unsigned short user_0;
+      float bvalue;
+      unsigned short user_1;
+      DiffusionGradientDirection direction;
+  };
+
   struct EncodingSpace
   {
     MatrixSize matrixSize;
@@ -338,6 +345,10 @@ namespace ISMRMRD
     Optional<long> echoTrainLength;
   };
 
+  struct DiffusionDescription {
+      std::vector<Diffusion> diffusion;
+  };
+
   struct SequenceParameters
   {
     Optional<std::vector<float> > TR;
@@ -346,9 +357,10 @@ namespace ISMRMRD
     Optional<std::vector<float> > flipAngle_deg;
     Optional<std::string> sequence_type;
     Optional<std::vector<float> > echo_spacing;
-    Optional<std::vector<float> > diffusion_bvalue;
-    Optional<std::vector<DiffusionGradientDirection> > diffusionGradientDirection;
+    Optional<DiffusionDescription> diffusionDescription;
   };
+ 
+ 
 
   enum class WaveformType {
       ECG,

@@ -64,12 +64,12 @@ endif ()
 #in the utility libraries, that don't affect the data format itself.
 # For more information see http://semver.org/
 set(ISMRMRD_VERSION_MAJOR 1)
-set(ISMRMRD_VERSION_MINOR 4)
+set(ISMRMRD_VERSION_MINOR 5)
 set(ISMRMRD_VERSION_PATCH 0)
 set(ISMRMRD_VERSION_STRING ${ISMRMRD_VERSION_MAJOR}.${ISMRMRD_VERSION_MINOR}.${ISMRMRD_VERSION_PATCH})
 set(ISMRMRD_SOVERSION ${ISMRMRD_VERSION_MAJOR}.${ISMRMRD_VERSION_MINOR})
 
-set(ISMRMRD_XML_SCHEMA_SHA1 "c3ca0cf557d540bade36122a4b815e22f356d4be")
+set(ISMRMRD_XML_SCHEMA_SHA1 "7e331dace0c802b7d5cf822ff46add8eefdbabb0")
 
 #Remove line breaks and white space that does not change the meaning of the schema
 file(STRINGS ${CMAKE_SOURCE_DIR}/schema/ismrmrd.xsd SCHEMA_STRINGS) #Read all strings from file
