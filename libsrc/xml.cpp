@@ -519,10 +519,13 @@ namespace ISMRMRD
 		r = parse_vector_float(sequenceParameters, "echo_spacing");
 		if (!r.empty()) p.echo_spacing = r;
 
-		
-		DiffusionDescription d;
-        p.diffusionDescription = parse_vector_diffusionDescription(sequenceParameters, "diffusionDescription");	
-		h.sequenceParameters = p;
+		pugi::xml_node diffusionDescription = sequenceParameters.child("DiffusionDescription");
+        if (diffusionDescription)
+		{
+			DiffusionDescription d;
+			p.diffusionDescription = parse_vector_diffusionDescription(sequenceParameters, "diffusionDescription");	
+			h.sequenceParameters = p;
+		}
     }
 
       if (userParameters) {
