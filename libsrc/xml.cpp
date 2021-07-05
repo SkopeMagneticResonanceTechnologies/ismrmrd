@@ -524,8 +524,9 @@ namespace ISMRMRD
 		{
 			DiffusionDescription d;
 			p.diffusionDescription = parse_vector_diffusionDescription(sequenceParameters, "diffusionDescription");	
-			h.sequenceParameters = p;
 		}
+
+        h.sequenceParameters = p;
     }
 
       if (userParameters) {
